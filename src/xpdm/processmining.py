@@ -67,7 +67,7 @@ def render_dfg(d: pd.DataFrame, path: str | Path) -> Path | None:
         lines.append(f'"{r.source}" -> "{r.target}" [label="{lab}", penwidth={1 + 4 * r.count / maxc:.2f}, color={colour}];')
     lines.append("}")
     dot_path = path.with_suffix(".dot")
-    dot_path.write_text("\n".join(lines))
+    dot_path.write_text("\n".join(lines), encoding="utf-8")
     if shutil.which("dot"):
         subprocess.run(["dot", "-Tpng", str(dot_path), "-o", str(path.with_suffix(".png"))], check=True)
         return path.with_suffix(".png")

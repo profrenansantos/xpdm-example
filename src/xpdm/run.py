@@ -21,6 +21,16 @@ from .features import (build_features, degradation_rate, feature_columns, health
 from .model import RULModel, out_of_fold, phm_score, rmse
 
 CLIP = 125
+_T0 = None
+
+
+def log(msg: str) -> None:
+    """Progress message with elapsed time; flushed so it shows immediately on Windows terminals too."""
+    import time
+    global _T0
+    _T0 = _T0 or time.perf_counter()
+    print(f"[{time.perf_counter() - _T0:6.1f}s] {msg}", flush=True)
+
 # Criteria in priority order (used for rank-order-centroid weights). False = lower value is more urgent.
 CRITERIA = {"rul_lower": False, "degradation_rate": True, "process_deviations": True}
 
@@ -38,15 +48,19 @@ def run(subset="FD001", data_dir="data", out="outputs", mirror=None, use_llm=Fal
         weighting="roc", context=None):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
+    log(f"Checking data in {data_dir} (downloads NASA archive if missing)")
     download(data_dir, mirror=mirror, subset=subset)
     train, test, rul_true = load_cmapss(subset, data_dir)
     train = add_rul(train, clip=CLIP)
     sensors = informative_sensors(train)
+    log(f"Building rolling features for {train.unit.nunique()} training engines")
     F = build_features(train, sensors)
     cols = feature_columns(F)
 
     # 1. RUL model: grouped cross-validation, then fit on all training engines.
+    log("Training RUL models: 5-fold cross-validation (15 fits, the slowest step)")
     oof = out_of_fold(F, cols)
+    log("Fitting final RUL models on all training engines")
     model = RULModel().fit(F[cols], F["rul"])
     T_all = build_features(test, sensors)
     T_all = pd.concat([T_all, model.predict(T_all[cols])], axis=1)
@@ -60,9 +74,11 @@ def run(subset="FD001", data_dir="data", out="outputs", mirror=None, use_llm=Fal
         "test_interval_coverage_80": float(((y_true.clip(upper=CLIP) >= snap["lower"]) &
                                             (y_true.clip(upper=CLIP) <= snap["upper"])).mean()),
     }
+    log("Permutation importance")
     imp = model.importance(F[cols].sample(4000, random_state=0), F["rul"].sample(4000, random_state=0))
 
     # 2. Simulated maintenance log for run-to-failure engines, replayed from out-of-fold predictions.
+    log("Simulating maintenance event log and mining it")
     log_hist = eventlog.simulate(oof)
     d = processmining.dfg(log_hist)
     conf = processmining.conformance(log_hist)
@@ -86,6 +102,7 @@ def run(subset="FD001", data_dir="data", out="outputs", mirror=None, use_llm=Fal
 
     # 4. Criteria and MCDA ranking. Optional context CSV: column `unit` plus extra criteria
     #    (higher = more urgent), e.g. operational criticality or spare-engine availability.
+    log("Ranking the in-service fleet (TOPSIS + weight sensitivity)")
     hi = health_index(test, train, sensors)
     crit = pd.DataFrame({
         "rul_lower": snap["lower"],
@@ -134,12 +151,13 @@ def run(subset="FD001", data_dir="data", out="outputs", mirror=None, use_llm=Fal
                                                  else f"numbers not in the table: {', '.join(flagged)}")
 
     # 6. Write outputs.
+    log(f"Writing outputs to {out}")
     rank.to_csv(out / "ranking.csv")
     eventlog.to_xes_columns(log_hist).to_csv(out / "eventlog_simulated.csv", index=False)
     conf.to_csv(out / "conformance.csv", index=False)
     var.to_csv(out / "variants.csv", index=False)
     imp.to_csv(out / "feature_importance.csv", header=["importance"])
-    (out / "metrics.json").write_text(json.dumps(metrics, indent=2))
+    (out / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     processmining.render_dfg(d, out / "dfg.png")
 
     fig, ax = plt.subplots(figsize=(9, 4))
@@ -161,7 +179,8 @@ def run(subset="FD001", data_dir="data", out="outputs", mirror=None, use_llm=Fal
               f"## Top {k} engines to inspect", "", tmd, "", "## Why", "", *lines]
     if llm_txt:
         report += ["", "## Generative-AI summary (check against the table)", "", llm_txt]
-    (out / "report.md").write_text("\n".join(report))
+    (out / "report.md").write_text("\n".join(report), encoding="utf-8")
+    log("Done")
     return metrics, rank
 
 
