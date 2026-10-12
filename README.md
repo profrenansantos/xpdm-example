@@ -1,5 +1,7 @@
 # xpdm: explainable predictive maintenance
 
+[![tests](https://github.com/profrenansantos/xpdm-example/actions/workflows/ci.yml/badge.svg)](https://github.com/profrenansantos/xpdm-example/actions/workflows/ci.yml) ![python](https://img.shields.io/badge/python-3.10%20%7C%203.12%20%7C%203.13-blue) ![licence](https://img.shields.io/badge/licence-MIT-green)
+
 Predicting when a turbofan engine will fail is only half of a maintenance decision. Someone still has to decide which engine to inspect first and defend that choice. This repository runs the whole chain on NASA's C-MAPSS turbofan data:
 
 1. **Remaining useful life (RUL)** from sensor trajectories, with an 80% uncertainty band (gradient boosting with quantile models; cross-validation grouped by engine).
@@ -34,9 +36,11 @@ C-MAPSS contains sensor trajectories, not maintenance records. The event log her
 ## Quick start
 
 ```bash
-git clone https://github.com/profrenansantos/xpdm && cd xpdm
+# one command per line, so this also works in Windows PowerShell 5.1
+git clone https://github.com/profrenansantos/xpdm-example.git
+cd xpdm-example
 pip install -e ".[dev]"
-xpdm --subset FD001 --data-dir data --out outputs     # downloads the NASA archive on first run
+python -m xpdm.run --data-dir data --out outputs     # downloads the NASA archive on first run
 pytest -q                                             # synthetic data, no download needed
 ```
 
@@ -50,12 +54,17 @@ Outputs go to `outputs/`:
 
 Options:
 
+- `--fast` uses 3 folds and 100 boosting rounds. It runs about 2.5 times faster with practically the same test RMSE (17.4 on FD001).
 - `--weights critic` uses data-driven CRITIC weights instead of rank-order-centroid weights.
 - `--context file.csv` adds your own criteria: a `unit` column plus columns where a higher value means more urgent.
 - `--llm` adds a generative-AI summary (`pip install anthropic`, set `ANTHROPIC_API_KEY`; model via `XPDM_LLM_MODEL`). Numbers in the summary that are not in the table are flagged.
 - `--mirror URL` gives a fallback base URL holding `train_FD001.txt`, `test_FD001.txt` and `RUL_FD001.txt`, if the NASA download is unavailable.
 
 The step-by-step version is `notebooks/walkthrough.ipynb`.
+
+## Continuous integration
+
+Every push and pull request runs the test suite on Python 3.10, 3.12 and 3.13 (`tests` job, synthetic data, under a minute). The `pipeline` job can be started by hand from the Actions tab. It downloads C-MAPSS, runs the full pipeline with `--fast`, and attaches `outputs/` to the run as a downloadable artifact, so the results above can be reproduced without installing anything.
 
 ## Layout
 

@@ -5,6 +5,7 @@ authors:
   - family-names: Santos
     given-names: Renan Silva
     orcid: "https://orcid.org/0000-0001-6656-9783"
+repository-code: "https://github.com/profrenansantos/xpdm-example"
 version: 0.1.0
 date-released: 2026-10-12
 license: MIT
