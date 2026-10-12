@@ -85,11 +85,11 @@ Process mining is implemented directly so the package stays MIT-licensed. pm4py 
 
 ## Data and references
 
-- Saxena, A., Goebel, K., Simon, D., & Eklund, N. (2008). Damage propagation modeling for aircraft engine run-to-failure simulation. *International Conference on Prognostics and Health Management*, IEEE. Data: NASA Prognostics Center of Excellence data repository. The data are not redistributed here.
-- Diakoulaki, D., Mavrotas, G., & Papayannakis, L. (1995). Determining objective weights in multiple criteria problems: the CRITIC method. *Computers & Operations Research*, 22(7), 763–770.
-- Barron, F. H., & Barrett, B. E. (1996). Decision quality using ranked attribute weights. *Management Science*, 42(11), 1515–1523.
-- Hwang, C.-L., & Yoon, K. (1981). *Multiple Attribute Decision Making: Methods and Applications*. Springer.
-- Nascimento, J.A., Caiado, R.G.G., Scavarda, L.F., Santos, R.S., & Lima, G.B.A. (2026). Decision support system for smart maintenance combining multicriteria and machine learning approaches: case study at the Brazilian Mint. *International Journal of Quality & Reliability Management*, 43(8), 2287–2319.
+- Saxena, A., Goebel, K., Simon, D., & Eklund, N. (2008). Damage propagation modeling for aircraft engine run-to-failure simulation. In *2008 International Conference on Prognostics and Health Management* (pp. 1–9). IEEE. https://doi.org/10.1109/PHM.2008.4711414. Data: NASA Prognostics Center of Excellence data repository. The data are not redistributed here.
+- Diakoulaki, D., Mavrotas, G., & Papayannakis, L. (1995). Determining objective weights in multiple criteria problems: the CRITIC method. *Computers & Operations Research*, 22(7), 763–770. https://doi.org/10.1016/0305-0548(94)00059-H
+- Barron, F. H., & Barrett, B. E. (1996). Decision quality using ranked attribute weights. *Management Science*, 42(11), 1515–1523. https://doi.org/10.1287/mnsc.42.11.1515
+- Hwang, C.-L., & Yoon, K. (1981). *Multiple Attribute Decision Making: Methods and Applications*. Lecture Notes in Economics and Mathematical Systems, vol. 186. Springer. https://doi.org/10.1007/978-3-642-48318-9
+- Nascimento, J.A., Caiado, R.G.G., Scavarda, L.F., Santos, R.S., & Lima, G.B.A. (2026). Decision support system for smart maintenance combining multicriteria and machine learning approaches: case study at the Brazilian Mint. *International Journal of Quality & Reliability Management*, 43(8), 2287–2319. https://doi.org/10.1108/IJQRM-12-2025-0473
 
 ## Author
 
