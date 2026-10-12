@@ -20,8 +20,11 @@ def rmse(y_true, y_pred) -> float:
     return float(np.sqrt(np.mean((np.asarray(y_true, float) - np.asarray(y_pred, float)) ** 2)))
 
 
+MAX_ITER = 300  # boosting rounds; set lower (e.g. 100) for a quick run
+
+
 def _gbr(**kw):
-    return HistGradientBoostingRegressor(max_iter=300, learning_rate=0.05, max_leaf_nodes=31,
+    return HistGradientBoostingRegressor(max_iter=MAX_ITER, learning_rate=0.05, max_leaf_nodes=31,
                                          l2_regularization=1.0, random_state=0, **kw)
 
 

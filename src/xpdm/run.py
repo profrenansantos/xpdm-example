@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from . import eventlog, explain, mcda, processmining
+from . import eventlog, explain, mcda, model as model_mod, processmining
 from .data import add_rul, download, load_cmapss
 from .features import (build_features, degradation_rate, feature_columns, health_index,
                        informative_sensors, last_cycle)
@@ -45,7 +45,7 @@ def _md_table(df: pd.DataFrame) -> str:
 
 
 def run(subset="FD001", data_dir="data", out="outputs", mirror=None, use_llm=False, top=10,
-        weighting="roc", context=None):
+        weighting="roc", context=None, fast=False):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     log(f"Checking data in {data_dir} (downloads NASA archive if missing)")
@@ -58,8 +58,11 @@ def run(subset="FD001", data_dir="data", out="outputs", mirror=None, use_llm=Fal
     cols = feature_columns(F)
 
     # 1. RUL model: grouped cross-validation, then fit on all training engines.
-    log("Training RUL models: 5-fold cross-validation (15 fits, the slowest step)")
-    oof = out_of_fold(F, cols)
+    folds = 3 if fast else 5
+    if fast:
+        model_mod.MAX_ITER = 100
+    log(f"Training RUL models: {folds}-fold cross-validation ({3 * folds} fits, the slowest step)")
+    oof = out_of_fold(F, cols, n_splits=folds)
     log("Fitting final RUL models on all training engines")
     model = RULModel().fit(F[cols], F["rul"])
     T_all = build_features(test, sensors)
@@ -194,9 +197,10 @@ def main():
     ap.add_argument("--weights", choices=["roc", "critic"], default="roc",
                     help="roc: rank-order centroid from the stated priority order; critic: data-driven")
     ap.add_argument("--context", default=None, help="CSV with `unit` and extra criteria (higher = more urgent)")
+    ap.add_argument("--fast", action="store_true", help="3 folds and 100 boosting rounds: quicker, slightly less accurate")
     ap.add_argument("--llm", action="store_true", help="add a generative-AI summary (needs anthropic + API key)")
     a = ap.parse_args()
-    metrics, rank = run(a.subset, a.data_dir, a.out, a.mirror, a.llm, a.top, a.weights, a.context)
+    metrics, rank = run(a.subset, a.data_dir, a.out, a.mirror, a.llm, a.top, a.weights, a.context, a.fast)
     print(json.dumps(metrics, indent=2))
     print(rank.head(a.top)[["rank", "closeness", "rul_point", "rul_true", "top_stability"]].to_string())
 

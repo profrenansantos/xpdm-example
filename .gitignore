@@ -1,6 +1,26 @@
+# Data and generated results (NASA data are not redistributed; figures for the README live in docs/)
 data/
 outputs/
+notebooks/dfg.png
+notebooks/dfg.dot
+
+# Python
 __pycache__/
+*.py[cod]
 *.egg-info/
+build/
+dist/
+.pytest_cache/
 .ipynb_checkpoints/
+
+# Environments and secrets
 .venv/
+venv/
+.env
+
+# Editors and OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

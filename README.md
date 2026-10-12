@@ -34,7 +34,7 @@ C-MAPSS contains sensor trajectories, not maintenance records. The event log her
 ## Quick start
 
 ```bash
-git clone https://github.com/<user>/xpdm && cd xpdm
+git clone https://github.com/profrenansantos/xpdm && cd xpdm
 pip install -e ".[dev]"
 xpdm --subset FD001 --data-dir data --out outputs     # downloads the NASA archive on first run
 pytest -q                                             # synthetic data, no download needed
